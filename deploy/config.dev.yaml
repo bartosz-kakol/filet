@@ -1,0 +1,10 @@
+# Development config used by `make dev` (paths relative to backend/).
+listen: ":8080"
+database: /.dev/data/filet.db
+places:
+  - name: Dev files
+    path: /.dev/files
+auth:
+  secure_cookies: false
+log:
+  level: debug

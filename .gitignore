@@ -1,0 +1,10 @@
+/bin/
+/.dev/
+.DS_Store
+node_modules/
+/frontend/build/
+/frontend/.svelte-kit/
+/frontend/test-results/
+/frontend/playwright-report/
+/backend/internal/web/dist/*
+!/backend/internal/web/dist/.gitkeep

@@ -1,0 +1,767 @@
+/*
+ * Motion catalogue. Every animation is tagged [Mxx]; the same tag appears as
+ * a comment at each hook in the components, so dropping one means deleting
+ * its block here and the hooks that grep finds for the tag.
+ * prefers-reduced-motion is honoured by the rule at the end of app.css (CSS)
+ * and by $lib/motion (Svelte transitions, ripple, view transitions).
+ */
+
+:root {
+	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+	--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+	--ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@layer components {
+	/* [M01] Buttons: background fades on hover. */
+	.btn,
+	.icon-btn {
+		transition:
+			background-color 150ms,
+			border-color 150ms,
+			color 150ms,
+			opacity 150ms,
+			transform 100ms var(--ease-out);
+	}
+
+	/* [M02] Press: buttons scale down quickly while pressed and straight back on release. Menu and popover
+	   triggers are exempt: their popup opens on press and is positioned against the trigger, so it would
+	   shift by a few pixels when the trigger scales back on release. */
+	.btn:not(:disabled, [aria-haspopup='menu'], [data-popover-trigger]):active,
+	.icon-btn:not(:disabled, [aria-haspopup='menu'], [data-popover-trigger]):active {
+		transform: scale(0.92);
+	}
+
+	/* [M07] Menu items: background fade, leading icon nudges right. */
+	.menu-item {
+		transition: background-color 120ms;
+	}
+	.menu-item > svg:first-child {
+		transition: transform 180ms var(--ease-spring);
+	}
+	.menu-item[data-highlighted] > svg:first-child {
+		transform: translateX(2px) scale(1.08);
+	}
+
+	/* [M38] Inputs: animated focus ring. */
+	.input {
+		transition:
+			border-color 150ms,
+			box-shadow 220ms var(--ease-out);
+	}
+	.input:focus {
+		box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent);
+	}
+}
+
+/* [M04] Click ripple (spawned by $lib/motion on .btn and [data-ripple]). Layered so position utilities still win. */
+@layer components {
+	.btn,
+	[data-ripple] {
+		position: relative;
+		overflow: hidden;
+	}
+}
+.m-ripple {
+	position: absolute;
+	border-radius: 9999px;
+	background: currentColor;
+	opacity: 0;
+	pointer-events: none;
+	transform: scale(0);
+	animation: m-ripple 550ms var(--ease-out);
+}
+@keyframes m-ripple {
+	from {
+		transform: scale(0);
+		opacity: 0.22;
+	}
+	to {
+		transform: scale(1);
+		opacity: 0;
+	}
+}
+
+/* [M05] Dropdowns & popovers: scale/fade out of their anchor, reverse on close. */
+.menu[data-state='open'] {
+	transform-origin: var(--bits-floating-transform-origin, top);
+	animation: m-pop-in 170ms var(--ease-out);
+}
+.menu[data-state='closed'] {
+	transform-origin: var(--bits-floating-transform-origin, top);
+	animation: m-pop-out 110ms var(--ease-in) forwards;
+}
+.menu[data-side='top'] {
+	--m-dy: 6px;
+}
+.menu[data-side='left'] {
+	--m-dx: 6px;
+}
+.menu[data-side='right'] {
+	--m-dx: -6px;
+}
+@keyframes m-pop-in {
+	from {
+		opacity: 0;
+		transform: translate(var(--m-dx, 0), var(--m-dy, -6px)) scale(0.94);
+	}
+}
+@keyframes m-pop-out {
+	to {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+}
+
+/* [M06] Menu items cascade in one after another. */
+.menu[data-state='open'] .menu-item {
+	animation: m-item-in 220ms var(--ease-out) backwards;
+}
+.menu[data-state='open'] .menu-item:nth-child(2) { animation-delay: 20ms; }
+.menu[data-state='open'] .menu-item:nth-child(3) { animation-delay: 40ms; }
+.menu[data-state='open'] .menu-item:nth-child(4) { animation-delay: 60ms; }
+.menu[data-state='open'] .menu-item:nth-child(5) { animation-delay: 80ms; }
+.menu[data-state='open'] .menu-item:nth-child(6) { animation-delay: 100ms; }
+.menu[data-state='open'] .menu-item:nth-child(7) { animation-delay: 120ms; }
+.menu[data-state='open'] .menu-item:nth-child(8) { animation-delay: 140ms; }
+.menu[data-state='open'] .menu-item:nth-child(n + 9) { animation-delay: 160ms; }
+@keyframes m-item-in {
+	from {
+		opacity: 0;
+		transform: translateX(-8px);
+	}
+}
+
+/* [M08] Dialogs: zoom in on desktop, slide up as a sheet on mobile. */
+@media (min-width: 48rem) {
+	.dialog[data-state='open'] {
+		animation: m-dialog-in 240ms var(--ease-out);
+	}
+	.dialog[data-state='closed'] {
+		animation: m-dialog-out 140ms var(--ease-in) forwards;
+	}
+}
+@media (max-width: 47.99rem) {
+	.dialog[data-state='open'],
+	.m-sheet[data-state='open'] {
+		animation: m-sheet-in 380ms var(--ease-sheet);
+	}
+	.dialog[data-state='closed'],
+	.m-sheet[data-state='closed'] {
+		animation: m-sheet-out 220ms var(--ease-in) forwards;
+	}
+}
+@keyframes m-dialog-in {
+	from {
+		opacity: 0;
+		transform: translateY(12px) scale(0.95);
+	}
+}
+@keyframes m-dialog-out {
+	to {
+		opacity: 0;
+		transform: translateY(6px) scale(0.97);
+	}
+}
+@keyframes m-sheet-in {
+	from {
+		transform: translateY(100%);
+	}
+}
+@keyframes m-sheet-out {
+	to {
+		transform: translateY(100%);
+	}
+}
+
+/* [M09] Dialog backdrop fades in with a light blur. */
+.dialog-overlay {
+	backdrop-filter: blur(3px);
+}
+.dialog-overlay[data-state='open'] {
+	animation: m-backdrop-in 240ms var(--ease-out);
+}
+.dialog-overlay[data-state='closed'] {
+	animation: m-backdrop-out 180ms var(--ease-in) forwards;
+}
+@keyframes m-backdrop-in {
+	from {
+		opacity: 0;
+		backdrop-filter: blur(0);
+	}
+}
+@keyframes m-backdrop-out {
+	to {
+		opacity: 0;
+		backdrop-filter: blur(0);
+	}
+}
+
+/* [M10] Toasts: auto-dismiss countdown bar (enter/exit are Svelte transitions in Toasts.svelte). */
+.m-toast-timer {
+	transform-origin: left;
+	animation: m-shrink-x linear forwards;
+}
+@keyframes m-shrink-x {
+	to {
+		transform: scaleX(0);
+	}
+}
+
+/* [M11] Selection bar slides up into place; the count pops when it changes. */
+.m-selbar {
+	animation: m-slide-up 220ms var(--ease-out);
+}
+@keyframes m-slide-up {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+.m-count-pop {
+	display: inline-block;
+	animation: m-pop 280ms var(--ease-spring);
+}
+
+/* [M12] Selection check marks pop in. */
+.m-check {
+	animation: m-pop 260ms var(--ease-spring);
+}
+@keyframes m-pop {
+	0% {
+		transform: scale(0.4);
+		opacity: 0;
+	}
+	60% {
+		transform: scale(1.18);
+		opacity: 1;
+	}
+}
+
+/* [M14] List rows: accent bar grows on the left edge on hover / selection. */
+.m-row {
+	position: relative;
+	transition: background-color 150ms;
+}
+.m-row::before {
+	content: '';
+	position: absolute;
+	inset: 6px auto 6px 0;
+	width: 3px;
+	border-radius: 0 3px 3px 0;
+	background: var(--accent);
+	transform: scaleY(0);
+	/* Collapsing: slow start, fast finish. */
+	transition: transform 250ms cubic-bezier(1, 0, 0.85, 1);
+}
+.m-row:hover::before,
+.m-row[aria-selected='true']::before {
+	transform: scaleY(1);
+	/* Growing: fast start, gentle settle, no overshoot. */
+	transition-timing-function: cubic-bezier(0.15, 0, 0, 1);
+}
+/* [M15] Grid cards grow on hover, sink while held; thumbnail zooms. */
+.m-card {
+	transition:
+		transform 240ms var(--ease-spring),
+		box-shadow 240ms var(--ease-out),
+		border-color 150ms;
+}
+.m-card:hover {
+	transform: scale(1.03);
+	box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.35);
+}
+.m-card:active {
+	transform: scale(0.97);
+	box-shadow: none;
+	transition-duration: 450ms;
+}
+.m-card:hover .m-thumb[data-loaded] {
+	transform: scale(1.06);
+}
+
+/* [M16] Folder tiles grow on hover, sink while held. */
+.m-folder {
+	transition:
+		transform 220ms var(--ease-spring),
+		background-color 150ms,
+		box-shadow 220ms var(--ease-out);
+}
+.m-folder:hover {
+	transform: scale(1.03);
+	box-shadow: 0 6px 16px -10px rgb(0 0 0 / 0.35);
+}
+.m-folder:active {
+	transform: scale(0.97);
+	box-shadow: none;
+	transition-duration: 450ms;
+}
+
+/* [M17] Thumbnails sharpen into view (blur + zoom out + fade). */
+.m-thumb {
+	opacity: 0;
+	filter: blur(10px);
+	transform: scale(1.08);
+	transition:
+		opacity 300ms,
+		filter 450ms var(--ease-out),
+		transform 450ms var(--ease-out);
+}
+.m-thumb[data-loaded] {
+	opacity: 1;
+	filter: none;
+	transform: none;
+}
+
+/* [M18] Entries rise in, staggered, right after a folder opens or the view mode changes. */
+[data-fresh] .m-enter {
+	animation: m-rise 300ms var(--ease-out) backwards;
+	animation-delay: calc(min(var(--i, 0), 14) * 18ms);
+}
+@keyframes m-rise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+/* [M20] Empty / error states fade up; the empty-folder icon floats. */
+.m-fade-up {
+	animation: m-rise 400ms var(--ease-out);
+}
+.m-float {
+	animation: m-float 3s ease-in-out infinite;
+}
+@keyframes m-float {
+	50% {
+		transform: translateY(-6px);
+	}
+}
+
+/* [M21] Drop overlay pops in and breathes; its icon bounces. */
+.m-drop {
+	animation:
+		m-drop-in 200ms var(--ease-out),
+		m-breathe 1.6s ease-in-out 200ms infinite;
+}
+@keyframes m-drop-in {
+	from {
+		opacity: 0;
+		transform: scale(0.97);
+	}
+}
+@keyframes m-breathe {
+	50% {
+		transform: scale(0.985);
+		box-shadow: inset 0 0 0 6px color-mix(in oklab, currentColor 12%, transparent);
+	}
+}
+.m-bounce {
+	animation: m-bounce 900ms var(--ease-out) infinite;
+}
+@keyframes m-bounce {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	40% {
+		transform: translateY(6px);
+	}
+}
+
+/* [M22] A folder under a drag wiggles its icon. */
+[data-drop='true'] .m-kind,
+[data-drop='true'] .m-folder-icon {
+	animation: m-wiggle 450ms ease-in-out infinite;
+}
+@keyframes m-wiggle {
+	25% {
+		transform: rotate(-12deg) scale(1.15);
+	}
+	75% {
+		transform: rotate(12deg) scale(1.15);
+	}
+}
+
+/* [M23] Touch long-press: the item slowly sinks while held, then pops when selection mode starts. */
+[data-pressing] {
+	transform: scale(0.95) !important;
+	background-color: color-mix(in oklab, var(--accent) 12%, transparent);
+	transition:
+		transform 500ms linear,
+		background-color 500ms linear;
+}
+[data-pressed-pop] {
+	animation: m-press-pop 320ms var(--ease-spring);
+}
+@keyframes m-press-pop {
+	0% {
+		transform: scale(0.95);
+	}
+	50% {
+		transform: scale(1.03);
+	}
+}
+
+/* [M24] Mobile FAB: springs in, plus turns into × while its sheet is open. */
+.m-fab {
+	animation: m-fab-in 420ms var(--ease-spring) 150ms backwards;
+	transition: transform 220ms var(--ease-spring);
+}
+.m-fab:active {
+	transform: scale(0.9);
+}
+.m-fab > svg {
+	transition: transform 300ms var(--ease-spring);
+}
+.m-fab[data-open='true'] > svg {
+	transform: rotate(135deg);
+}
+@keyframes m-fab-in {
+	from {
+		transform: scale(0) rotate(-90deg);
+	}
+}
+
+/* [M25] Disclosure icons rotate while their menu is open. */
+.m-chev,
+.m-rot90 {
+	transition: transform 240ms var(--ease-spring);
+}
+[data-state='open'] > .m-chev {
+	transform: rotate(180deg);
+}
+[data-state='open'] > .m-rot90 {
+	transform: rotate(90deg);
+}
+
+/* [M26] Refresh icon does one full turn per click. */
+.m-spin-once {
+	animation: m-spin 600ms var(--ease-out);
+}
+@keyframes m-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* [M27] Settings gear turns on hover and while its popover is open. */
+.m-gear {
+	transition: transform 400ms var(--ease-out);
+}
+.icon-btn:hover > .m-gear,
+[data-state='open'] > .m-gear {
+	transform: rotate(90deg);
+}
+
+/* [M29] Active progress bars carry moving stripes. */
+.m-stripes {
+	background-image: linear-gradient(
+		45deg,
+		rgb(255 255 255 / 0.22) 25%,
+		transparent 25%,
+		transparent 50%,
+		rgb(255 255 255 / 0.22) 50%,
+		rgb(255 255 255 / 0.22) 75%,
+		transparent 75%
+	);
+	background-size: 12px 12px;
+	animation: m-stripes 700ms linear infinite;
+}
+@keyframes m-stripes {
+	to {
+		background-position: 12px 0;
+	}
+}
+
+/* [M30] Transfer rows flash green when done, shake when they fail. */
+[data-testid='upload-row'][data-state='done'],
+[data-testid='job-row'][data-status='completed'] {
+	animation: m-flash-ok 1s ease-out;
+}
+[data-testid='upload-row'][data-state='failed'],
+[data-testid='upload-row'][data-state='corrupted'],
+[data-testid='job-row'][data-status='failed'] {
+	animation: m-shake 420ms ease-in-out;
+}
+@keyframes m-flash-ok {
+	from {
+		background-color: color-mix(in oklab, var(--ok) 25%, transparent);
+	}
+}
+@keyframes m-shake {
+	20%,
+	60% {
+		transform: translateX(-5px);
+	}
+	40%,
+	80% {
+		transform: translateX(5px);
+	}
+}
+
+/* [M31] Upload placeholders shimmer. */
+.m-shimmer {
+	position: relative;
+	overflow: hidden;
+}
+.m-shimmer::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(100deg, transparent 30%, color-mix(in oklab, var(--text) 10%, transparent) 50%, transparent 70%);
+	transform: translateX(-100%);
+	animation: m-shimmer 1.4s ease-in-out infinite;
+	pointer-events: none;
+}
+@keyframes m-shimmer {
+	to {
+		transform: translateX(100%);
+	}
+}
+
+/* [M32] Preview opens with a zoom-fade (it fades out via a Svelte transition). */
+.m-preview {
+	animation: m-zoom-in 240ms var(--ease-out);
+}
+@keyframes m-zoom-in {
+	from {
+		opacity: 0;
+		transform: scale(0.97);
+	}
+}
+
+/* [M33] Stepping through previews slides the next file in from its side. */
+.m-step[data-dir='1'] {
+	animation: m-step-next 260ms var(--ease-out);
+}
+.m-step[data-dir='-1'] {
+	animation: m-step-prev 260ms var(--ease-out);
+}
+@keyframes m-step-next {
+	from {
+		opacity: 0;
+		transform: translateX(40px);
+	}
+}
+@keyframes m-step-prev {
+	from {
+		opacity: 0;
+		transform: translateX(-40px);
+	}
+}
+
+/* [M34] Preview prev/next arrows nudge outward on hover, squash on press. */
+.m-nudge > svg {
+	transition: transform 220ms var(--ease-spring);
+}
+.m-nudge[data-dir='prev']:hover > svg {
+	transform: translateX(-3px);
+}
+.m-nudge[data-dir='next']:hover > svg {
+	transform: translateX(3px);
+}
+.m-nudge:active {
+	scale: 0.9;
+}
+
+/* [M36] Login: card rises in, logo pops, errors shake. */
+.m-login-card {
+	animation: m-rise 500ms var(--ease-out);
+}
+.m-login-logo {
+	animation: m-pop 600ms var(--ease-spring) 150ms backwards;
+}
+.m-shake {
+	animation: m-shake 420ms ease-in-out;
+}
+
+/* [M37] Swapped toggle icons (password eye) spin in. */
+.m-swap {
+	animation: m-swap 260ms var(--ease-spring);
+}
+@keyframes m-swap {
+	from {
+		opacity: 0;
+		transform: rotate(-90deg) scale(0.5);
+	}
+}
+
+/* [M39] Search: icon lights up on focus; on mobile the field expands from the right. */
+.m-search > svg {
+	transition:
+		color 150ms,
+		transform 220ms var(--ease-spring);
+}
+.m-search:focus-within > svg {
+	color: var(--accent);
+	transform: scale(1.1);
+}
+@media (max-width: 47.99rem) {
+	.m-search {
+		animation: m-expand-left 260ms var(--ease-out);
+	}
+}
+@keyframes m-expand-left {
+	from {
+		clip-path: inset(0 0 0 100% round 6px);
+		opacity: 0.4;
+	}
+	to {
+		clip-path: inset(0 0 0 0 round 6px);
+	}
+}
+
+/* [M40] Attention badges pop in and send out a ring now and then. */
+.m-badge {
+	animation: m-pop 320ms var(--ease-spring);
+}
+.m-badge::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	box-shadow: 0 0 0 0 var(--danger);
+	animation: m-ring 2.4s ease-out 600ms infinite;
+}
+@keyframes m-ring {
+	0% {
+		box-shadow: 0 0 0 0 color-mix(in oklab, var(--danger) 60%, transparent);
+	}
+	40%,
+	100% {
+		box-shadow: 0 0 0 7px transparent;
+	}
+}
+
+/* [M41] Warning / failing drive dots pulse. */
+.m-pulse-dot {
+	animation: m-pulse-dot 1.6s ease-in-out infinite;
+}
+@keyframes m-pulse-dot {
+	50% {
+		transform: scale(1.5);
+		opacity: 0.6;
+	}
+}
+
+/* [M42] Disk usage bars fill from the left. */
+.m-grow-x {
+	transform-origin: left;
+	animation: m-grow-x 700ms var(--ease-out) 80ms backwards;
+}
+@keyframes m-grow-x {
+	from {
+		transform: scaleX(0);
+	}
+}
+
+/* [M43] The chosen view-mode toggle pops its icon; toggles press like buttons ([M02]). */
+[data-state='on'] > .m-toggle-icon {
+	animation: m-pop 280ms var(--ease-spring);
+}
+.m-toggle {
+	transition:
+		background-color 150ms,
+		transform 100ms var(--ease-out);
+}
+.m-toggle:active {
+	transform: scale(0.92);
+}
+
+/* [M44] Theme switch: the new theme spreads out in a circle from where you clicked. */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 220ms;
+}
+:root[data-vt='theme']::view-transition-old(root),
+:root[data-vt='theme']::view-transition-new(root) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+:root[data-vt='theme']::view-transition-new(root) {
+	animation: m-reveal 550ms var(--ease-out);
+}
+@keyframes m-reveal {
+	from {
+		clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0));
+	}
+	to {
+		clip-path: circle(150vmax at var(--vt-x, 100%) var(--vt-y, 0));
+	}
+}
+
+/* [M47] Keyboard focus ring snaps in from outside. */
+.m-focus {
+	animation: m-ring-in 220ms var(--ease-out);
+}
+@keyframes m-ring-in {
+	from {
+		outline-offset: 6px;
+		outline-color: transparent;
+	}
+}
+
+/* [M48] Breadcrumb links: underline grows from the left on hover and shrinks back to the left.
+   Anchored to the content box so it lines up with the text in both directions. */
+.m-underline {
+	background-image: linear-gradient(currentColor, currentColor);
+	background-repeat: no-repeat;
+	background-origin: content-box;
+	background-position: left bottom;
+	background-size: 0 1px;
+	transition:
+		background-size 250ms var(--ease-out),
+		background-color 150ms;
+}
+.m-underline:hover {
+	background-size: 100% 1px;
+}
+
+/* [M50] Indeterminate loading bar while a folder that isn't cached loads (shows only if it takes > 150 ms). */
+.m-loadbar {
+	overflow: hidden;
+	opacity: 0;
+	animation: m-fade-in 150ms ease-out 150ms forwards;
+}
+.m-loadbar::after {
+	content: '';
+	display: block;
+	height: 100%;
+	width: 35%;
+	background: var(--accent);
+	border-radius: 9999px;
+	animation: m-indeterminate 1.1s var(--ease-out) infinite;
+}
+@keyframes m-indeterminate {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(300%);
+	}
+}
+@keyframes m-fade-in {
+	to {
+		opacity: 1;
+	}
+}
+.m-loading-dots::after {
+	content: '';
+	animation: m-dots 1.2s steps(4) infinite;
+}
+@keyframes m-dots {
+	0% {
+		content: '';
+	}
+	25% {
+		content: '.';
+	}
+	50% {
+		content: '..';
+	}
+	75% {
+		content: '...';
+	}
+}

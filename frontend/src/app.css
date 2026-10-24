@@ -1,0 +1,165 @@
+@import 'tailwindcss';
+@import './motion.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+	--bg: var(--color-white);
+	--surface: var(--color-zinc-50);
+	--surface-2: var(--color-zinc-100);
+	--border: var(--color-zinc-200);
+	--text: var(--color-zinc-900);
+	--muted: var(--color-zinc-500);
+	--accent: var(--color-blue-600);
+	--accent-fg: var(--color-white);
+	--danger: var(--color-red-600);
+	--warn: var(--color-amber-500);
+	--ok: var(--color-emerald-500);
+	color-scheme: light;
+}
+
+.dark {
+	--bg: var(--color-zinc-950);
+	--surface: var(--color-zinc-900);
+	--surface-2: var(--color-zinc-800);
+	--border: var(--color-zinc-800);
+	--text: var(--color-zinc-100);
+	--muted: var(--color-zinc-400);
+	--accent: var(--color-blue-400);
+	--accent-fg: var(--color-zinc-950);
+	--danger: var(--color-red-400);
+	color-scheme: dark;
+}
+
+@theme inline {
+	--color-bg: var(--bg);
+	--color-surface: var(--surface);
+	--color-surface-2: var(--surface-2);
+	--color-line: var(--border);
+	--color-fg: var(--text);
+	--color-muted: var(--muted);
+	--color-accent: var(--accent);
+	--color-accent-fg: var(--accent-fg);
+	--color-danger: var(--danger);
+	--color-warn: var(--warn);
+	--color-ok: var(--ok);
+	--font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	--font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+html,
+body {
+	height: 100%;
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-sans);
+	-webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+	.btn {
+		@apply inline-flex h-9 items-center justify-center gap-2 rounded-md border border-line bg-bg px-3 text-sm font-medium text-fg select-none hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50;
+	}
+	.btn-primary {
+		@apply border-transparent bg-accent text-accent-fg hover:bg-accent hover:opacity-90;
+	}
+	.btn-danger {
+		@apply border-transparent bg-danger text-white hover:bg-danger hover:opacity-90;
+	}
+	.btn-ghost {
+		@apply border-transparent bg-transparent;
+	}
+	.icon-btn {
+		@apply inline-flex size-9 shrink-0 items-center justify-center rounded-md text-fg hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40;
+	}
+	.input {
+		@apply h-9 w-full rounded-md border border-line bg-bg px-3 text-sm text-fg outline-none placeholder:text-muted focus:border-accent;
+	}
+	.menu {
+		@apply z-50 min-w-48 rounded-lg border border-line bg-bg p-1 text-sm shadow-lg outline-none;
+	}
+	.menu-item {
+		@apply flex h-8 cursor-default items-center gap-2 rounded px-2 outline-none select-none data-disabled:opacity-40 data-highlighted:bg-surface-2;
+	}
+	.badge {
+		@apply inline-flex items-center rounded-full px-1.5 text-[11px] leading-[18px] font-semibold;
+	}
+	.dialog-overlay {
+		@apply fixed inset-0 z-50 bg-black/40;
+	}
+	.dialog {
+		@apply fixed z-50 flex max-h-[90vh] flex-col gap-4 overflow-auto border border-line bg-bg p-5 shadow-xl outline-none
+			max-md:inset-x-0 max-md:bottom-0 max-md:rounded-t-2xl
+			md:top-1/2 md:left-1/2 md:w-[min(32rem,calc(100vw-2rem))] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl;
+	}
+}
+
+/* Rendered markdown */
+.md-prose {
+	@apply max-w-3xl text-[15px] leading-relaxed break-words;
+}
+.md-prose h1 {
+	@apply mt-6 mb-3 border-b border-line pb-1 text-2xl font-semibold;
+}
+.md-prose h2 {
+	@apply mt-6 mb-3 border-b border-line pb-1 text-xl font-semibold;
+}
+.md-prose h3 {
+	@apply mt-5 mb-2 text-lg font-semibold;
+}
+.md-prose h4,
+.md-prose h5,
+.md-prose h6 {
+	@apply mt-4 mb-2 font-semibold;
+}
+.md-prose p,
+.md-prose ul,
+.md-prose ol,
+.md-prose pre,
+.md-prose blockquote,
+.md-prose table {
+	@apply my-3;
+}
+.md-prose ul {
+	@apply list-disc pl-6;
+}
+.md-prose ol {
+	@apply list-decimal pl-6;
+}
+.md-prose a {
+	@apply text-accent underline;
+}
+.md-prose code {
+	@apply rounded bg-surface-2 px-1 py-0.5 font-mono text-[0.9em];
+}
+.md-prose pre {
+	@apply overflow-auto rounded-lg bg-surface-2 p-3;
+}
+.md-prose pre code {
+	@apply bg-transparent p-0;
+}
+.md-prose blockquote {
+	@apply border-l-4 border-line pl-4 text-muted;
+}
+.md-prose table {
+	@apply block overflow-auto border-collapse;
+}
+.md-prose th,
+.md-prose td {
+	@apply border border-line px-3 py-1.5;
+}
+.md-prose img {
+	@apply inline max-w-full;
+}
+.md-prose hr {
+	@apply my-6 border-line;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition: none !important;
+		animation: none !important;
+	}
+}

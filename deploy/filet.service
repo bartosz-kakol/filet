@@ -1,0 +1,23 @@
+[Unit]
+Description=Filet file manager
+After=network-online.target local-fs.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=filet
+Group=filet
+EnvironmentFile=/etc/filet/filet.env
+ExecStart=/usr/local/bin/filet --config /etc/filet/config.yaml
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+# The database directory plus every writable place path:
+ReadWritePaths=/var/lib/filet /srv/media
+# For SMART: AmbientCapabilities=CAP_SYS_RAWIO CAP_SYS_ADMIN and SupplementaryGroups=disk
+
+[Install]
+WantedBy=multi-user.target

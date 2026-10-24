@@ -1,0 +1,48 @@
+# Filet configuration. Secrets (FILET_USERNAME, FILET_PASSWORD) come from the
+# environment, never from this file.
+
+# Address the HTTP server binds to. Plain HTTP only; put a TLS reverse proxy in front.
+listen: "127.0.0.1:8080"
+
+# SQLite database file. The parent directory must exist and be writable.
+database: /var/lib/filet/filet.db
+
+# Places exposed by Filet.
+places:
+  - name: Media
+    path: /srv/media
+  - name: Backups
+    path: /mnt/backup
+    readonly: true
+    # smart_devices: [/dev/sdb]   # override automatic drive detection
+
+auth:
+  login_lockout:
+    enabled: true
+    duration: 5s
+  secure_cookies: true
+  trusted_origins: []          # e.g. ["https://files.example.com"]
+
+share_links:
+  default_expiry: 168h         # 0 = never
+
+stream_links:
+  ttl: 12h
+
+thumbnails:
+  workers: 0                   # 0 = max(1, NumCPU/2)
+
+smart:
+  enabled: true
+  interval: 1h
+
+tools:
+  ffmpeg: ffmpeg
+  ffprobe: ffprobe
+  vipsthumbnail: vipsthumbnail
+  vips: vips
+  smartctl: smartctl
+
+log:
+  level: info                  # debug | info | warn | error
+  format: text                 # text | json

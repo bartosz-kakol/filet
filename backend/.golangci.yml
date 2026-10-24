@@ -1,0 +1,38 @@
+version: "2"
+run:
+  build-tags: [filettest]
+linters:
+  default: none
+  enable:
+    - govet
+    - staticcheck
+    - errcheck
+    - ineffassign
+    - unused
+    - gosec
+    - bodyclose
+    - sqlclosecheck
+    - contextcheck
+    - revive
+  settings:
+    errcheck:
+      # Close on files opened for reading cannot lose data; writes check
+      # Close (and fdatasync) explicitly.
+      exclude-functions:
+        - (*os.File).Close
+        - (io.Closer).Close
+        - (*os.Root).Close
+        - (io.ReadCloser).Close
+    gosec:
+      excludes:
+        - G104 # duplicate of errcheck
+        - G304 # file paths come from os.Root-confined, validated input
+  exclusions:
+    generated: lax
+    paths:
+      - internal/db/gen
+    rules:
+      - path: _test\.go
+        linters: [gosec, errcheck, bodyclose, contextcheck, revive]
+formatters:
+  enable: [gofmt]

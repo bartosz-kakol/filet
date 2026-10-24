@@ -1,0 +1,1 @@
+{"smartctl":{"exit_status":8},"device":{"name":"/dev/sdc","protocol":"ATA"},"model_name":"OLD DISK","serial_number":"Z2","user_capacity":{"bytes":1000000000000},"rotation_rate":7200,"smart_status":{"passed":false},"temperature":{"current":45},"ata_smart_attributes":{"table":[{"id":5,"raw":{"value":3000}}]}}
